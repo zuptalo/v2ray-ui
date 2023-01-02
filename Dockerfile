@@ -1,7 +1,7 @@
 FROM golang:latest AS builder
 WORKDIR /root
 COPY . .
-RUN go build main.go
+RUN GOOS=linux GOARCH=arm64 go build main.go
 
 FROM debian:11-slim
 LABEL org.opencontainers.image.authors="notifications@zuptalo.com"
@@ -17,5 +17,5 @@ RUN apt-get update && \
 WORKDIR /root
 COPY --from=builder /root/main /root/x-ui
 EXPOSE 54321
-VOLUME [ "/etc/xray" ]
+VOLUME [ "/etc/x-ui" ]
 CMD [ "./x-ui" ]
