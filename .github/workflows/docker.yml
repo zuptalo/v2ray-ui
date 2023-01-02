@@ -1,7 +1,7 @@
 name: Docker Image CI
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
       inputs:
         project:
@@ -10,11 +10,8 @@ on:
           default: 
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -22,7 +19,6 @@ jobs:
    
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
-
 
     - name: Docker Hub login
       env:
@@ -46,4 +42,4 @@ jobs:
         --platform=linux/amd64,linux/arm64 \
         --output "type=image,push=true" \
         --file ./Dockerfile ./ \
-        --tag $(echo "${DOCKERHUB_USERNAME}" | tr '[:upper:]' '[:lower:]')/${{ github.event.inputs.project }}:latest
+        --tag $(echo "${DOCKERHUB_USERNAME}" | tr '[:upper:]' '[:lower:]')/x-ui:latest

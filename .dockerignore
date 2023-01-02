@@ -1,0 +1,12 @@
+.cache
+.idea
+.github
+media
+docker-compose.yml
+acme.sh
+install.sh
+LICENSE
+README.md
+README-fa.md
+x-ui.service
+x-ui.sh
