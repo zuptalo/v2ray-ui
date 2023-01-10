@@ -11,16 +11,16 @@ on:
 
 jobs:
   build-go-executables:
-    name: Build Executables From GO Source Code
+
     runs-on: ubuntu-latest
 
     steps:
 
-    - name: Checkout repository
+    - name: Checkout Repository
       uses: actions/checkout@v3
 
     - name: Build Go Executable for amd64
-    - run: |
+      run: |
         GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/x-ui
         upx --best --lzma linux/amd64/"x-ui"
 
@@ -31,7 +31,7 @@ jobs:
         path: linux/amd64/x-ui
 
     - name: Build Go Executable for arm64
-    - run: | 
+      run: | 
         GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
         upx --best --lzma linux/arm64/"x-ui"
 
@@ -64,8 +64,6 @@ jobs:
       with:
         buildx-version: latest
 
-    - name: Build Dockerfile
-
     - name: Download amd64 Executable
       uses: actions/download-artifact@v3
       with:
@@ -76,6 +74,7 @@ jobs:
       with:
         name: arm64-executable
 
+    - name: Build Dockerfile
       env:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKERHUB_REPO: ${{ secrets.DOCKER_HUB_REPOSITORY }}
