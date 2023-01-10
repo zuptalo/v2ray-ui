@@ -1,0 +1,55 @@
+name: Docker Image CI
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project'
+        required: true
+        default:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Build Go Executable for amd64
+        run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/"x-ui"
+          upx --best --lzma linux/amd64/"x-ui"
+
+      - name: Build Go Executable for arm64
+        run: |
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
+          upx --best --lzma linux/arm64/"x-ui"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Docker Hub login
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+        run: |
+          echo "${DOCKERHUB_TOKEN}" | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          buildx-version: latest
+
+      - name: Build Dockerfile
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKERHUB_REPO: ${{ secrets.DOCKER_HUB_REPOSITORY }}
+        run: |
+          docker buildx build \
+          --platform=linux/amd64,linux/arm64 \
+          --output "type=image,push=true" \
+          --file ./Dockerfile ./ \
+          --tag $(echo "${DOCKERHUB_USERNAME}" | tr '[:upper:]' '[:lower:]')/x-ui:latest
