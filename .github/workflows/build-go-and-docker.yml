@@ -10,7 +10,7 @@ on:
         default:
 
 jobs:
-  build:
+  build-go-executables:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,24 +18,36 @@ jobs:
           submodules: true
 
       - name: Build Go Executable for amd64
-        run: |
-          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/"x-ui"
-          upx --best --lzma linux/amd64/"x-ui"
+      - run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/x-ui
+      - run: upx --best --lzma linux/amd64/"x-ui"
+      - uses: actions/upload-artifact@master
+        with:
+          name: amd64
+          path: linux/amd64/x-ui
 
       - name: Build Go Executable for arm64
-        run: |
-          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
-          upx --best --lzma linux/arm64/"x-ui"
+      - run: GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
+      - run: upx --best --lzma linux/arm64/"x-ui"
+      - uses: actions/upload-artifact@master
+        with:
+          name: arm64
+          path: linux/arm64/x-ui
+
+  build-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
-      - name: Docker Hub login
+      - name: Docker Hub Login
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-        run: |
-          echo "${DOCKERHUB_TOKEN}" | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+        run: echo "${DOCKERHUB_TOKEN}" | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
 
       - name: Set up Docker Buildx
         id: buildx
@@ -44,6 +56,17 @@ jobs:
           buildx-version: latest
 
       - name: Build Dockerfile
+
+      - uses: actions/download-artifact@master
+        with:
+          name: amd64
+          path: linux/amd64
+
+      - uses: actions/download-artifact@master
+        with:
+          name: arm64
+          path: linux/arm64
+
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKERHUB_REPO: ${{ secrets.DOCKER_HUB_REPOSITORY }}
