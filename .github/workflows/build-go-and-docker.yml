@@ -69,13 +69,13 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: amd64-executable
-        path: linux/amd64/x-ui
+        path: /tmp/linux/amd64/x-ui
 
     - name: Download arm64 Executable
       uses: actions/download-artifact@v3
       with:
         name: arm64-executable
-        path: linux/arm64/x-ui
+        path: /tmp/linux/arm64/x-ui
 
     - name: Build Dockerfile
       env:
