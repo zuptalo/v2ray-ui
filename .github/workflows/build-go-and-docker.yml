@@ -42,6 +42,7 @@ jobs:
         path: linux/arm64/x-ui
 
   build-docker-image:
+    needs: build-go-executables
     runs-on: ubuntu-latest
 
     steps:
