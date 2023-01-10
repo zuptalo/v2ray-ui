@@ -11,34 +11,43 @@ on:
 
 jobs:
   build-go-executables:
+    name: Build Executables From GO Source Code
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Build Go Executable for amd64
-      - run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/x-ui
-      - run: upx --best --lzma linux/amd64/"x-ui"
-      - uses: actions/upload-artifact@master
+      - run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o linux/amd64/x-ui
+          upx --best --lzma linux/amd64/"x-ui"
+
+      - name: Archive amd64 Executable
+        uses: actions/upload-artifact@v3
         with:
-          name: amd64
+          name: amd64-executable
           path: linux/amd64/x-ui
 
       - name: Build Go Executable for arm64
-      - run: GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
-      - run: upx --best --lzma linux/arm64/"x-ui"
-      - uses: actions/upload-artifact@master
+      - run: | 
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o linux/arm64/"x-ui"
+          upx --best --lzma linux/arm64/"x-ui"
+
+      - name: Archive arm64 Executable
+        uses: actions/upload-artifact@v3
         with:
-          name: arm64
+          name: arm64-executable
           path: linux/arm64/x-ui
 
   build-docker-image:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -57,15 +66,15 @@ jobs:
 
       - name: Build Dockerfile
 
-      - uses: actions/download-artifact@master
+      - name: Download amd64 Executable
+        uses: actions/download-artifact@v3
         with:
-          name: amd64
-          path: linux/amd64
+          name: amd64-executable
 
-      - uses: actions/download-artifact@master
+      - name: Download arm64 Executable
+        uses: actions/download-artifact@v3
         with:
-          name: arm64
-          path: linux/arm64
+          name: arm64-executable
 
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
